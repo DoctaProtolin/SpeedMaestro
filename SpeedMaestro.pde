@@ -10,6 +10,24 @@ PVector getIntersection(Line a, Line b) {
   
   if (a.isVertical() || b.isVertical()) {
     
+    if (b.isVertical() && !a.isVertical()) {
+      float x = b.a.x;
+      float y = a.solve(x);
+
+      if (a.inRange(x) && b.inRangeY(y)) {
+        println("Yep");
+        return new PVector(x, y);
+      }
+    } else if (a.isVertical() && !b.isVertical()) {
+      float x = a.a.x;
+      float y = b.solve(x);
+      // Untested code
+      if (b.inRange(x) && a.inRangeY(y)) {
+        println("Yep");
+        return new PVector(x, y);
+      }
+    }
+    
   }
   
   float x = (b.getIntercept() - a.getIntercept())/(a.getSlope() - b.getSlope());
@@ -30,9 +48,6 @@ Line shapeIntersection(Line ray, Solid s) {
     float x = getIntersection(l, ray).x;
 
     if (l.inRange(x)) {
-      strokeWeight(10);
-      line(l.a.x, l.a.y, l.b.x, l.b.y);
-      println("Found line");
       return l;
     }
   }

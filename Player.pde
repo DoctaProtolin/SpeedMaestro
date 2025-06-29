@@ -3,6 +3,9 @@
 
 class Player {
   PVector pos, size, vel;
+  
+  boolean grounded = false;
+  
   Player(float x, float y, float w, float h) {
     pos = new PVector(x, y);
     size = new PVector(w, h);
@@ -11,6 +14,7 @@ class Player {
   
   void collision() {
     PVector groundPoint = new PVector(pos.x + size.x/2, pos.y + size.y);
+    grounded = false;
     
     fill(0, 255, 0);
     ellipse(groundPoint.x, groundPoint.y, 30, 30);
@@ -34,9 +38,11 @@ class Player {
     Line l = shapeIntersection(vertRay, colSolid);
     
     if (l != null) {
-      pos.y = l.solve(pos.x);
+      // Add 1 for consistent groundedness
+      pos.y = l.solve(pos.x) - size.y + 1;
       vel.y = 0;
-      // println("Slope: " + l.getSlope());
+      println("Slope: " + l.getSlope());
+      grounded = true;
     }
     
     
@@ -46,6 +52,12 @@ class Player {
     vel.y += 0.5;
     
     collision();
+    
+    if (grounded) {
+      fill(0, 255, 0); 
+    } else fill(255, 0, 0);
+    
+    rect(100, 100, 20, 20);
     
     pos.add(vel);
   }
