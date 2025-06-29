@@ -5,6 +5,7 @@ class Player {
   PVector pos, size, vel;
   
   boolean grounded = false;
+  float speed = 5;
   
   Player(float x, float y, float w, float h) {
     pos = new PVector(x, y);
@@ -24,7 +25,7 @@ class Player {
     for (Solid s : solids) {
       if (isInside(s, groundPoint)) {
         colSolid = s;
-        println("Found colSolid");
+        // println("Found colSolid");
         break;
       }
     }
@@ -41,10 +42,35 @@ class Player {
       // Add 1 for consistent groundedness
       pos.y = l.solve(pos.x) - size.y + 1;
       vel.y = 0;
-      println("Slope: " + l.getSlope());
+      // println("Slope: " + l.getSlope());
       grounded = true;
     }
     
+    
+  }
+  
+  void movement() {
+    if (grounded && Input.action) {
+      vel.y = -10;
+    }
+    
+    
+    if (Input.left == !Input.right) {
+      if (Input.left) {
+        vel.x = -speed;
+      } else if (Input.right) {
+        vel.x = speed;
+      }
+    }
+    
+    // Friction
+    if (!Input.left && !Input.right) {
+      if (abs(vel.x) > 1) {
+        vel.x -= sign(vel.x) * 0.2; 
+      } else {
+        vel.x = 0;
+      }
+    }
     
   }
   
@@ -52,17 +78,20 @@ class Player {
     vel.y += 0.5;
     
     collision();
+    movement();
     
-    if (grounded) {
-      fill(0, 255, 0); 
-    } else fill(255, 0, 0);
-    
-    rect(100, 100, 20, 20);
     
     pos.add(vel);
   }
   
   void draw() {
+    
+    // Test for groundedness
+    if (grounded) {
+      fill(0, 255, 0); 
+    } else fill(255, 0, 0);
+    rect(100, 100, 20, 20);
+    
     fill(200, 0, 0);
     strokeWeight(1);
     rect(pos.x, pos.y, size.x, size.y);
