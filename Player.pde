@@ -5,6 +5,7 @@ class Player {
   PVector pos, size, vel;
   
   boolean grounded = false;
+  float groundAngle = 0;
   float speed = 5;
   
   Player(float x, float y, float w, float h) {
@@ -40,10 +41,17 @@ class Player {
     
     if (l != null) {
       // Add 1 for consistent groundedness
-      pos.y = l.solve(pos.x) - size.y + 1;
+      pos.y = l.solve(groundPoint.x) - size.y + 1;
       vel.y = 0;
       // println("Slope: " + l.getSlope());
       grounded = true;
+      
+      if (l.isVertical()) groundAngle = 90;
+      else {
+        groundAngle = atan(-l.getSlope()); // Negative for up meaning positive like in cartesian
+      }
+    } else {
+      groundAngle = 0;
     }
     
     
@@ -57,9 +65,16 @@ class Player {
     
     if (Input.left == !Input.right) {
       if (Input.left) {
-        vel.x = -speed;
+        if (grounded) {
+          vel.x = -cos(groundAngle) * speed;
+          vel.y = sin(groundAngle) * speed;
+        } else vel.x = -speed;
       } else if (Input.right) {
-        vel.x = speed;
+        
+        if (grounded) {
+          vel.x = cos(groundAngle) * speed;
+          vel.y = -sin(groundAngle) * speed;
+        } else vel.x = speed;
       }
     }
     
