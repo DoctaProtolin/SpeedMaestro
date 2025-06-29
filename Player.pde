@@ -4,9 +4,13 @@
 class Player {
   PVector pos, size, vel;
   
+  // Surface values
   boolean grounded = false;
   float groundAngle = 0;
+  Line surface = null;
+  
   float speed = 5;
+  
   
   Player(float x, float y, float w, float h) {
     pos = new PVector(x, y);
@@ -14,9 +18,12 @@ class Player {
     vel = new PVector();
   }
   
+  PVector getGroundPoint() {
+    return new PVector(pos.x + size.x/2, pos.y + size.y);
+  }
+  
   void collision() {
-    PVector groundPoint = new PVector(pos.x + size.x/2, pos.y + size.y);
-    grounded = false;
+    PVector groundPoint = getGroundPoint();
     
     fill(0, 255, 0);
     ellipse(groundPoint.x, groundPoint.y, 30, 30);
@@ -32,6 +39,7 @@ class Player {
     }
     
     if (colSolid == null) {
+      grounded = false;
       return;
     }
     
@@ -40,18 +48,25 @@ class Player {
     Line l = shapeIntersection(vertRay, colSolid);
     
     if (l != null) {
-      // Add 1 for consistent groundedness
-      pos.y = l.solve(groundPoint.x) - size.y + 1;
+      // Properly eposition object
+      pos.y = l.solve(groundPoint.x) - size.y + 1; // Add 1 for consistent groundedness
       vel.y = 0;
-      // println("Slope: " + l.getSlope());
+      
+      // Store critical data (grounded, groundAngle, surface)
       grounded = true;
+      surface = l;
       
       if (l.isVertical()) groundAngle = 90;
       else {
-        groundAngle = atan(-l.getSlope()); // Negative for up meaning positive like in cartesian
+        float slope = -l.getSlope();
+        groundAngle = atan(slope); // Negative for up meaning positive like in cartesian
+        
       }
     } else {
+      // Reset critical data
       groundAngle = 0;
+      grounded = false;
+      surface = null;
     }
     
     
@@ -62,20 +77,34 @@ class Player {
       vel.y = -10;
     }
     
-    
-    if (Input.left == !Input.right) {
+    // Direction for debugging
+    if (grounded) {
+      PVector dir = PVector.fromAngle(groundAngle);
+      dir.mult(40);
+      
+      strokeWeight(3);
+      line(100, 100, 100 + dir.x, 100 + dir.y);
+    }
+
+    if (grounded) {
+      // Handle ground movement
       if (Input.left) {
-        if (grounded) {
-          vel.x = -cos(groundAngle) * speed;
-          vel.y = sin(groundAngle) * speed;
-        } else vel.x = -speed;
-      } else if (Input.right) {
-        
-        if (grounded) {
-          vel.x = cos(groundAngle) * speed;
-          vel.y = -sin(groundAngle) * speed;
-        } else vel.x = speed;
+        vel.x = -cos(groundAngle) * speed;
+        vel.y = sin(groundAngle) * speed;
       }
+      if (Input.right) {
+        vel.x = cos(groundAngle) * speed;
+        vel.y = -sin(groundAngle) * speed;
+      }
+      
+      // Adhere to surface
+      pos.y = surface.solve(getGroundPoint().x) - size.y + 1;
+      
+    } else {
+      // Handle air movement
+      int mov = convertBool(Input.right) - convertBool(Input.left); // Thanks Harmony
+      
+      vel.x = mov * speed;
     }
     
     // Friction
@@ -90,12 +119,14 @@ class Player {
   }
   
   void update() {
-    vel.y += 0.5;
+    
+    // Update gravity
+    if (!grounded) vel.y += 0.5;
     
     collision();
     movement();
     
-    
+    // Update position
     pos.add(vel);
   }
   

@@ -44,7 +44,7 @@ static class Input {
   }
   
   public static void registerInputs(int keyCode, boolean k) {
-    println(keyCode);
+
     switch (keyCode) {
       case UP:
         up = k;
