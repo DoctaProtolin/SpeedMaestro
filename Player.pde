@@ -25,15 +25,14 @@ class Player {
   void collision() {
     PVector groundPoint = getGroundPoint();
     
-    fill(0, 255, 0);
-    ellipse(groundPoint.x, groundPoint.y, 30, 30);
+    //fill(0, 255, 0);
+    //ellipse(groundPoint.x, groundPoint.y, 30, 30);
     
     Solid colSolid = null;
     
     for (Solid s : solids) {
       if (isInside(s, groundPoint)) {
         colSolid = s;
-        // println("Found colSolid");
         break;
       }
     }

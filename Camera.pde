@@ -12,6 +12,10 @@ class Camera {
     focusPos = new PVector();
   }
   
+  PVector getWorldCoords(float x, float y) {
+    return new PVector(pos.x + (x - width/2), y);
+  }
+  
   void updateFocus(PVector fpos) {
     focusPos.x = fpos.x;
   }
