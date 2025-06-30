@@ -37,7 +37,6 @@ static class Input {
         
       case Keybinds.action:
         actionPress = k;
-        print("action");
 
         break;
     }

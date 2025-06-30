@@ -75,6 +75,7 @@ class Player {
   void movement() {
     if (grounded && Input.action) {
       vel.y = -10;
+      grounded = false;
     }
     
     // Direction for debugging
