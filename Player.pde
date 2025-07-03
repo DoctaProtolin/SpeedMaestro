@@ -22,13 +22,14 @@ class Player {
     return new PVector(pos.x + size.x/2, pos.y + size.y);
   }
   
-  void collision() {
+  PVector getCeilingPoint() {
+    return new PVector(pos.x + size.x/2, pos.y);
+  }
+  
+  void groundCheck() {
     PVector groundPoint = getGroundPoint();
-    
-    //fill(0, 255, 0);
-    //ellipse(groundPoint.x, groundPoint.y, 30, 30);
-    
     Solid colSolid = null;
+    
     
     for (Solid s : solids) {
       if (isInside(s, groundPoint)) {
@@ -42,31 +43,64 @@ class Player {
       return;
     }
     
-    Line vertRay = new Line(groundPoint, new PVector(groundPoint.x, groundPoint.y - height*2));
+    Line groundRay = new Line(groundPoint, new PVector(groundPoint.x, groundPoint.y - height*2));
+    Line groundSurf = shapeIntersection(groundRay, colSolid);
     
-    Line l = shapeIntersection(vertRay, colSolid);
-    
-    if (l != null) {
-      // Properly eposition object
-      pos.y = l.solve(groundPoint.x) - size.y + 1; // Add 1 for consistent groundedness
+    // Handle ground
+    if (groundSurf != null) {
+      // Properly reposition object
+      pos.y = groundSurf.solve(groundPoint.x) - size.y + 1; // Add 1 for consistent groundedness
       vel.y = 0;
       
-      // Store critical data (grounded, groundAngle, surface)
+      // Store surface data (grounded, groundAngle, surface)
       grounded = true;
-      surface = l;
+      surface = groundSurf;
       
-      if (l.isVertical()) groundAngle = 90;
-      else {
-        float slope = -l.getSlope();
-        groundAngle = atan(slope); // Negative for up meaning positive like in cartesian
-        
-      }
+      if (groundSurf.isVertical()) groundAngle = 90;
+      else groundAngle = atan(-groundSurf.getSlope()); // Negative for up meaning positive like in cartesian
+      
     } else {
-      // Reset critical data
-      groundAngle = 0;
+      // Reset surface data
       grounded = false;
       surface = null;
+      groundAngle = 0;
     }
+  }
+  
+  void ceilCheck() {
+    
+    Solid colSolid = null;
+    PVector ceilPoint = getCeilingPoint();
+    
+    for (Solid s : solids) {
+      if (isInside(s, ceilPoint)) {
+        colSolid = s;
+        break;
+      }
+    }
+    
+    if (colSolid == null) {
+      return;
+    }
+    
+    Line ceilRay = new Line(ceilPoint, new PVector(ceilPoint.x, ceilPoint.y - height*2));
+    Line ceilSurf = shapeIntersection(ceilRay, colSolid);
+    
+    if (ceilSurf != null && !grounded) {
+      pos.y = ceilSurf.solve(ceilPoint.x) + 1;
+      vel.y = 0;
+      
+      // Reset surface data
+      grounded = false;
+      surface = null;
+      groundAngle = 0;
+    }
+  }
+  
+  void collision() {
+    
+    ceilCheck();
+    groundCheck();
     
     
   }
