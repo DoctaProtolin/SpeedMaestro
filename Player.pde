@@ -7,6 +7,7 @@ class Player {
   // Surface values
   boolean grounded = false;
   float groundAngle = 0;
+  
   Line groundSurface = null;
   Line ceilSurface = null;
   
@@ -45,25 +46,25 @@ class Player {
     }
     
     Line groundRay = new Line(groundPoint, new PVector(groundPoint.x, groundPoint.y - height*2));
-    Line groundSurf = shapeIntersection(groundRay, colSolid);
+    Line surf = shapeIntersection(groundRay, colSolid);
     
     // Handle ground
-    if (groundSurf != null) {
+    if (surf != null) {
       // Properly reposition object
-      pos.y = groundSurf.solve(groundPoint.x) - size.y + 1; // Add 1 for consistent groundedness
+      pos.y = surf.solve(groundPoint.x) - size.y + 1; // Add 1 for consistent groundedness
       vel.y = 0;
       
       // Store surface data (grounded, groundAngle, surface)
       grounded = true;
-      surface = groundSurf;
+      groundSurface = surf;
       
-      if (groundSurf.isVertical()) groundAngle = 90;
-      else groundAngle = atan(-groundSurf.getSlope()); // Negative for up meaning positive like in cartesian
+      if (surf.isVertical()) groundAngle = 90;
+      else groundAngle = atan(-surf.getSlope()); // Negative for up meaning positive like in cartesian
       
     } else {
       // Reset surface data
       grounded = false;
-      surface = null;
+      groundSurface = null;
       groundAngle = 0;
     }
   }
@@ -85,15 +86,17 @@ class Player {
     }
     
     Line ceilRay = new Line(ceilPoint, new PVector(ceilPoint.x, ceilPoint.y + height*2));
-    Line ceilSurf = shapeIntersection(ceilRay, colSolid);
+    Line surf = shapeIntersection(ceilRay, colSolid);
     
-    if (ceilSurf != null && !grounded) {
-      pos.y = ceilSurf.solve(ceilPoint.x) + 1;
+    if (surf != null && !grounded) {
+      pos.y = surf.solve(ceilPoint.x) + 1;
       vel.y = 0;
       
       // Reset surface data
       grounded = false;
-      surface = null;
+      groundSurface = null;
+      ceilSurface = surf;
+      
       groundAngle = 0;
       
       println("Ceiling found");
@@ -110,8 +113,12 @@ class Player {
   
   void movement() {
     
+    boolean ceilingAbove = true;
+    if (ceilSurface != null) {
+      ceilingAbove = (pos.y - ceilSurface.solve(getCeilingPoint().x)) < 10;
+    }
     
-    if (grounded && Input.action) {
+    if (grounded && Input.action && !ceilingAbove) {
       vel.y = -10;
       grounded = false;
     }
@@ -137,7 +144,7 @@ class Player {
       }
       
       // Adhere to surface
-      pos.y = surface.solve(getGroundPoint().x) - size.y + 1;
+      pos.y = groundSurface.solve(getGroundPoint().x) - size.y + 1;
       
     } else {
       // Handle air movement
