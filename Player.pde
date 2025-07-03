@@ -7,7 +7,8 @@ class Player {
   // Surface values
   boolean grounded = false;
   float groundAngle = 0;
-  Line surface = null;
+  Line groundSurface = null;
+  Line ceilSurface = null;
   
   float speed = 5;
   
@@ -83,7 +84,7 @@ class Player {
       return;
     }
     
-    Line ceilRay = new Line(ceilPoint, new PVector(ceilPoint.x, ceilPoint.y - height*2));
+    Line ceilRay = new Line(ceilPoint, new PVector(ceilPoint.x, ceilPoint.y + height*2));
     Line ceilSurf = shapeIntersection(ceilRay, colSolid);
     
     if (ceilSurf != null && !grounded) {
@@ -94,6 +95,8 @@ class Player {
       grounded = false;
       surface = null;
       groundAngle = 0;
+      
+      println("Ceiling found");
     }
   }
   
@@ -106,6 +109,8 @@ class Player {
   }
   
   void movement() {
+    
+    
     if (grounded && Input.action) {
       vel.y = -10;
       grounded = false;
