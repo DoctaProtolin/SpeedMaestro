@@ -13,7 +13,6 @@ class Player {
   
   float speed = 5;
   
-  
   Player(float x, float y, float w, float h) {
     pos = new PVector(x, y);
     size = new PVector(w, h);
@@ -82,9 +81,9 @@ class Player {
       }
     }
     
+    // Reset ceilSurface if no ceilSolid
     if (colSolid == null) {
       ceilSurface = null;
-      println("Reset ceilSurface");
       return;
     }
     
@@ -207,4 +206,11 @@ class Player {
     strokeWeight(1);
     rect(pos.x, pos.y, size.x, size.y);
   }
+}
+
+
+
+
+void spawnPlayer() {
+  player = new Player(100, 100, 35, 60);
 }

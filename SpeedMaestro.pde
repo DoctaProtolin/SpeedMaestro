@@ -13,12 +13,12 @@ ArrayList<Solid> solids = new ArrayList();
 boolean lastKeyPressed = false;
 
 void setup() {
-  size(1000, 500);
+  size(800, 600);
   
   camera = new Camera();
   editor = new Editor();
   
-  player = new Player(100, 100, 35, 60);
+  spawnPlayer();
   solids.add(new Solid(0, 300, 500, 300, 250, 400)); // Ground
   solids.add(new Solid(300, 300, 500, 200, 0, 0));
   
@@ -70,6 +70,11 @@ void mouseClicked() {
 
 void keyPressed() {
   Input.registerInputs(keyCode, true);
+  
+  if (key == 'r') {
+    println("Spawning player");
+    spawnPlayer();
+  }
   
   if (key == ESC) {
     key = 0;
