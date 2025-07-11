@@ -19,8 +19,12 @@ void setup() {
   editor = new Editor();
   
   player = new Player(100, 100, 35, 60);
-  solids.add(new Solid(0, 300, 500, 300, 250, 400));
+  solids.add(new Solid(0, 300, 500, 300, 250, 400)); // Ground
   solids.add(new Solid(300, 300, 500, 200, 0, 0));
+  
+  solids.get(0).name = "Solid 0";
+  solids.get(1).name = "Solid 1";
+  // solids.get(2).name = "Solid 2";
 }
 
 void draw() {
@@ -30,7 +34,7 @@ void draw() {
   
   // solids.get(1).points[2] = new PVector(mouseX, mouseY);
   
-  player.update();
+  
 
   camera.updateFocus(player.pos);
   camera.update();
@@ -42,6 +46,7 @@ void draw() {
   translate(width/2-camera.pos.x, 0);
   editor.update();
   
+  player.update();
   player.draw();
   
   for (Solid s : solids) {

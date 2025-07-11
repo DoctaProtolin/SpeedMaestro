@@ -32,7 +32,6 @@ class Player {
     PVector groundPoint = getGroundPoint();
     Solid colSolid = null;
     
-    
     for (Solid s : solids) {
       if (isInside(s, groundPoint)) {
         colSolid = s;
@@ -61,11 +60,13 @@ class Player {
       if (surf.isVertical()) groundAngle = 90;
       else groundAngle = atan(-surf.getSlope()); // Negative for up meaning positive like in cartesian
       
+      //println("Grounded.");
     } else {
       // Reset surface data
       grounded = false;
       groundSurface = null;
       groundAngle = 0;
+      println("Ungrounded");
     }
   }
   
@@ -82,13 +83,31 @@ class Player {
     }
     
     if (colSolid == null) {
+      ceilSurface = null;
+      println("Reset ceilSurface");
       return;
     }
     
     Line ceilRay = new Line(ceilPoint, new PVector(ceilPoint.x, ceilPoint.y + height*2));
     Line surf = shapeIntersection(ceilRay, colSolid);
     
-    if (surf != null && !grounded) {
+    if (surf != null) {
+      stroke(0);
+      strokeWeight(5);
+    
+      line(surf.a.x, surf.a.y, surf.b.x, surf.b.y);
+      
+      strokeWeight(1);
+      fill(0, 200, 0);
+      ellipse(ceilPoint.x, surf.solve(ceilPoint.x), 10, 10);
+      
+      println(ceilPoint.y);
+      
+      println(colSolid.name);
+    }
+    
+    if (surf != null && !grounded && vel.y < 0) {
+      println(grounded);
       pos.y = surf.solve(ceilPoint.x) + 1;
       vel.y = 0;
       
@@ -108,16 +127,16 @@ class Player {
     ceilCheck();
     groundCheck();
     
-    
   }
   
   void movement() {
     
-    boolean ceilingAbove = true;
+    boolean ceilingAbove = false;
     if (ceilSurface != null) {
-      ceilingAbove = (pos.y - ceilSurface.solve(getCeilingPoint().x)) < 10;
+      ceilingAbove = (pos.y - ceilSurface.solve(getCeilingPoint().x)) < 30;
     }
     
+    // Jump conditions
     if (grounded && Input.action && !ceilingAbove) {
       vel.y = -10;
       grounded = false;

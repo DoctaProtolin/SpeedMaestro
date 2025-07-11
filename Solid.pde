@@ -3,6 +3,7 @@
 
 class Solid {
   PVector[] points = new PVector[3];
+  String name = "Unnamed Solid";
   
   Solid(PVector a, PVector b, PVector c) {
     points[0] = a.copy();
@@ -29,9 +30,7 @@ class Solid {
   void draw() {
     beginShape();
     
-    for (PVector p : points) {
-      vertex(p.x, p.y);
-    }
+    for (PVector p : points) vertex(p.x, p.y);
     
     endShape(CLOSE);
   }
