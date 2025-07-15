@@ -1,14 +1,53 @@
 
 
+static class EditorMode {
+  static final int place = 1;
+  static final int delete = 2;
+}
 
 class Editor {
-  final String PLACEMODE = "1";
-  String mode = "1";
   
+  int mode = EditorMode.delete;
+  
+  EditorPlaceMode  editorPlaceMode;
+  EditorDeleteMode editorDeleteMode;
+  
+  Editor() {
+    editorPlaceMode  = new EditorPlaceMode();
+    editorDeleteMode = new EditorDeleteMode();
+  }
+  
+  void switchMode() {
+    
+  }
+  
+  void onClick() {
+    switch (mode) {
+      case EditorMode.place:  editorPlaceMode.onClick();  break;
+      case EditorMode.delete: editorDeleteMode.onClick(); break;
+    }
+  }
+  
+  void update() {
+    switch (mode) {
+      case EditorMode.place: editorPlaceMode.update(); break;
+    }
+  }
+  
+  void draw() {
+    switch (mode) {
+      case EditorMode.place: editorPlaceMode.draw(); break;
+    }
+  }
+}
+
+
+// EDITOR PLACE MODE
+
+class EditorPlaceMode {
   ArrayList<PVector> tempPoints = new ArrayList();
   
-  void placeMode() {
-    
+  void update() {
     for (PVector p : tempPoints) {
         fill(0, 255, 0);
         strokeWeight(1);
@@ -19,7 +58,6 @@ class Editor {
       solids.add(new Solid(tempPoints.get(0), tempPoints.get(1), tempPoints.get(2)));
       tempPoints = new ArrayList();
     }
-    
     
     // Draw snap to point
     PVector point = camera.getWorldCoords(mouseX, mouseY);
@@ -38,27 +76,72 @@ class Editor {
   }
   
   void onClick() {
-    if (mode == PLACEMODE) {
-      PVector point = camera.getWorldCoords(mouseX, mouseY);
+    PVector point = camera.getWorldCoords(mouseX, mouseY);
       
-      // Snap to point
-      for (Solid s : solids) {
-        for (PVector p : s.points) {
-          if (dist(point.x, point.y, p.x, p.y) < 20) {
-            point.x = p.x;
-            point.y = p.y;
-            break;
-          }
+    // Snap to point
+    for (Solid s : solids) {
+      for (PVector p : s.points) {
+        if (dist(point.x, point.y, p.x, p.y) < 20) {
+          point.x = p.x;
+          point.y = p.y;
+          break;
         }
       }
-      
-      tempPoints.add(point);
     }
+    
+    tempPoints.add(point);
   }
   
-  void update() {
-    if (mode == PLACEMODE) {
-      placeMode();
+  void draw() {
+    for (PVector p : tempPoints) {
+      ellipse(p.x, p.y, 10, 10);
     }
   }
 }
+
+// EDITOR DELETE MODE
+
+class EditorDeleteMode {
+  void onClick() {
+    for (Solid s : solids) {
+      PVector mousePoint = camera.getWorldCoords(mouseX, mouseY);
+      
+      if (isInside(s, mousePoint)) {
+        solids.remove(s);
+        break;
+      }
+    }
+  }
+  
+  void draw() {
+    for (Solid s : solids) {
+      PVector mousePoint = camera.getWorldCoords(mouseX, mouseY);
+      
+      if (isInside(s, mousePoint)) {
+        fill(#ff0000);
+        s.draw();
+        break;
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// End

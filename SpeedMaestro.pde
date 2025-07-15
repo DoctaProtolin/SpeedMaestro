@@ -29,13 +29,8 @@ void setup() {
 
 void draw() {
   
+  background(#cccccc);
   
-  background(200, 200, 200);
-  
-  // solids.get(1).points[2] = new PVector(mouseX, mouseY);
-  
-  
-
   camera.updateFocus(player.pos);
   camera.update();
   
