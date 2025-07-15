@@ -11,7 +11,9 @@ class Player {
   Line groundSurface = null;
   Line ceilSurface = null;
   
+  // Player values
   float speed = 5;
+  int facing = 1;
   
   Player(float x, float y, float w, float h) {
     pos = new PVector(x, y);
@@ -99,14 +101,9 @@ class Player {
       strokeWeight(1);
       fill(0, 200, 0);
       ellipse(ceilPoint.x, surf.solve(ceilPoint.x), 10, 10);
-      
-      println(ceilPoint.y);
-      
-      println(colSolid.name);
     }
     
     if (surf != null && !grounded && vel.y < 0) {
-      println(grounded);
       pos.y = surf.solve(ceilPoint.x) + 1;
       vel.y = 0;
       
@@ -116,8 +113,6 @@ class Player {
       ceilSurface = surf;
       
       groundAngle = 0;
-      
-      println("Ceiling found");
     }
   }
   
@@ -166,10 +161,13 @@ class Player {
       
     } else {
       // Handle air movement
-      int mov = convertBool(Input.right) - convertBool(Input.left); // Thanks Harmony
+      int mov = boolToInt(Input.right) - boolToInt(Input.left); // Thanks Harmony
       
       vel.x = mov * speed;
     }
+    
+    if      (Input.left)  facing = -1;
+    else if (Input.right) facing = 1;
     
     // Friction
     if (!Input.left && !Input.right) {

@@ -31,7 +31,7 @@ void draw() {
   
   background(#cccccc);
   
-  camera.updateFocus(player.pos);
+  camera.updateFocus(player.pos, player.facing);
   camera.update();
   
   
@@ -49,6 +49,8 @@ void draw() {
     s.draw();
   }
   
+  editor.draw();
+  
   popMatrix();
   
   fill(255, 0, 0);
@@ -62,9 +64,14 @@ void mouseClicked() {
   editor.onClick();
 }
 
+void mouseDragged() {
+  editor.onDrag();
+}
 
 void keyPressed() {
   Input.registerInputs(keyCode, true);
+  
+  if (Input.left || Input.right) camera.enable = true;
   
   if (key == 'r') {
     println("Spawning player");
@@ -78,4 +85,5 @@ void keyPressed() {
 
 void keyReleased() {
   Input.registerInputs(keyCode, false);
+  editor.switchMode();
 }

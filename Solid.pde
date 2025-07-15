@@ -5,6 +5,9 @@ class Solid {
   PVector[] points = new PVector[3];
   String name = "Unnamed Solid";
   
+  int colour = #ffffff;
+  boolean useColour = true;
+  
   Solid(PVector a, PVector b, PVector c) {
     points[0] = a.copy();
     points[1] = b.copy();
@@ -27,7 +30,14 @@ class Solid {
     return lines;
   }
   
+  void setColour(int r, int g, int b) {
+    colour = color(r, g, b);
+  }
+  
   void draw() {
+    
+    if (useColour) fill(colour);
+    
     beginShape();
     
     for (PVector p : points) vertex(p.x, p.y);

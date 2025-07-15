@@ -6,7 +6,7 @@ int sign(float n) {
   else return 1;
 }
 
-int convertBool(boolean a) {
+int boolToInt(boolean a) {
   return a ? 1 : 0;
 }
 
