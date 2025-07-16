@@ -34,35 +34,58 @@ class Player {
   // ===== COLLISION CHECKS =====
   
   void groundCheck() {
-    PVector groundPoint = getGroundPoint();
+    
 
-
-    // Prevent riding a slope downwards into another one while moving
-    groundPoint.x += sign(vel.x) * vel.x;
+    PVector groundPoint;
+    
+    
+    
+    /*
+      sign(vel.x) * vel.x:
+        Standard ground point check. When transitioning from a triangle going downwards to another triangle going upwards while grounded,
+        the default ground point will not be inside the highest shape, making it ineligible for collision. This causes a bug
+        which has you clip through the top shape. This is fixed by shifting the point ahead so it's inside the top shape before we ever enter it and
+        cause all of our problems.
+        
+      0:
+        If the above check fails, it's possible we're going down a slope with no other objects ahead of us, causing us to continuously detatch from the surface
+        when the ground point looks ahead. The proper solution may be to shift the y coordinate too, which will be necessary to make more radical ramps.
+    
+    */
+    float[] groundPointShift = {sign(vel.x) * vel.x, 0};
     
     Line surf = null;
     float minY = pos.y + height * 2; // This should be offscreen and will serve as a good max value.
     
-    Line groundRay = new Line(groundPoint, new PVector(groundPoint.x, groundPoint.y - height*2));
-    
-    // Find the highest surface in this shape and compare it to the highest surface in previous shapes.
-    // The check for the ceiling is not the same.
-    for (Solid tempSolid : solids) {
+
+    int shiftIndex = 0;    
+    do {
+      groundPoint = getGroundPoint();
       
-      if (!isInside(tempSolid, groundPoint)) continue; // Skip irrelevant shapes
+      groundPoint.x += groundPointShift[shiftIndex]; // Prevent riding a slope downwards into another one while moving
       
-      ArrayList<Line> surfaces = shapeIntersection(groundRay, tempSolid); // Get surface intersections per shape
+      Line groundRay = new Line(groundPoint, new PVector(groundPoint.x, groundPoint.y - height*2));
       
-      for (Line tempSurf : surfaces) {
-        float y = getIntersection(tempSurf, groundRay).y;
+      // Find the highest surface in this shape and compare it to the highest surface in previous shapes.
+      // The check for the ceiling is not the same.
+      for (Solid tempSolid : solids) {
         
-        // Set highest surface (at this x position)
-        if (y <= minY) {
-          surf = tempSurf;
-          minY = y;
+        if (!isInside(tempSolid, groundPoint)) continue; // Skip irrelevant shapes
+        
+        ArrayList<Line> surfaces = shapeIntersection(groundRay, tempSolid); // Get surface intersections per shape
+        
+        for (Line tempSurf : surfaces) {
+          float y = getIntersection(tempSurf, groundRay).y;
+          
+          // Set highest surface (at this x position)
+          if (y <= minY) {
+            surf = tempSurf;
+            minY = y;
+          }
         }
       }
-    }
+      shiftIndex ++;
+    } while(shiftIndex < groundPointShift.length && surf == null);
     
     // Handle ground
     if (surf != null) {

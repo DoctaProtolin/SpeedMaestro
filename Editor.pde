@@ -189,7 +189,7 @@ class EditorSaveMode {
     editor = e;
   }
   
-  void saveData(String fileName) {
+  boolean saveData(String fileName) {
     String[] data = new String[solids.size()]; // Initialize data string
         
     println("Saving level data...");
@@ -213,6 +213,7 @@ class EditorSaveMode {
     
     saveStrings(fileName, data);
     println("Saved.");
+    return true;
   }
   
   boolean loadData(String fileName) {
@@ -273,7 +274,7 @@ class EditorSaveMode {
     
     if (key >= 49 && key <= 53) {
       if (saveMode) {
-        saveData("saves/slot" + Integer.toString(key - 49) + ".txt");
+        success = saveData("saves/slot" + Integer.toString(key - 49) + ".txt");
         saveMode = false;
         
       } else if (loadMode) {
