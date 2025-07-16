@@ -40,7 +40,8 @@ PVector getIntersection(Line a, Line b) {
   return new PVector(x, y);
 }
 
-Line shapeIntersection(Line ray, Solid s) {
+ArrayList<Line> shapeIntersection(Line ray, Solid s) {
+  ArrayList<Line> lines = new ArrayList();
   for (Line l : s.getLines()) {
     
     //if (l.isVertical()) {
@@ -52,11 +53,11 @@ Line shapeIntersection(Line ray, Solid s) {
     float x = getIntersection(l, ray).x;
 
     if (l.inRange(x)) {
-      return l;
+      lines.add(l);
     }
   }
   
-  return null;
+  return lines;
 }
 
 boolean isInside(Solid s, PVector p) {

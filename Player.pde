@@ -21,6 +21,8 @@ class Player {
     vel = new PVector();
   }
   
+  // ===== COLLISION POINTS =====
+  
   PVector getGroundPoint() {
     return new PVector(pos.x + size.x/2, pos.y + size.y);
   }
@@ -29,24 +31,38 @@ class Player {
     return new PVector(pos.x + size.x/2, pos.y);
   }
   
+  // ===== COLLISION CHECKS =====
+  
   void groundCheck() {
     PVector groundPoint = getGroundPoint();
-    Solid colSolid = null;
+
+
+    // Prevent riding a slope downwards into another one while moving
+    groundPoint.x += sign(vel.x) * vel.x;
     
-    for (Solid s : solids) {
-      if (isInside(s, groundPoint)) {
-        colSolid = s;
-        break;
-      }
-    }
-    
-    if (colSolid == null) {
-      grounded = false;
-      return;
-    }
+    Line surf = null;
+    float minY = pos.y + height * 2; // This should be offscreen and will serve as a good max value.
     
     Line groundRay = new Line(groundPoint, new PVector(groundPoint.x, groundPoint.y - height*2));
-    Line surf = shapeIntersection(groundRay, colSolid);
+    
+    // Find the highest surface in this shape and compare it to the highest surface in previous shapes.
+    // The check for the ceiling is not the same.
+    for (Solid tempSolid : solids) {
+      
+      if (!isInside(tempSolid, groundPoint)) continue; // Skip irrelevant shapes
+      
+      ArrayList<Line> surfaces = shapeIntersection(groundRay, tempSolid); // Get surface intersections per shape
+      
+      for (Line tempSurf : surfaces) {
+        float y = getIntersection(tempSurf, groundRay).y;
+        
+        // Set highest surface (at this x position)
+        if (y <= minY) {
+          surf = tempSurf;
+          minY = y;
+        }
+      }
+    }
     
     // Handle ground
     if (surf != null) {
@@ -60,6 +76,10 @@ class Player {
       
       if (surf.isVertical()) groundAngle = 90;
       else groundAngle = atan(-surf.getSlope()); // Negative for up meaning positive like in cartesian
+      
+      //strokeWeight(10);
+      //stroke(255, 0, 0);
+      //line(surf.a.x, surf.a.y, surf.b.x, surf.b.y);
       
       //println("Grounded.");
     } else {
@@ -90,7 +110,25 @@ class Player {
     }
     
     Line ceilRay = new Line(ceilPoint, new PVector(ceilPoint.x, ceilPoint.y + height*2));
-    Line surf = shapeIntersection(ceilRay, colSolid);
+    ArrayList<Line> surfaces = shapeIntersection(ceilRay, colSolid);
+    
+    Line surf = null;
+    float minY = 0;
+    
+    // Search for the highest surface if there are any.
+    if (surfaces.size() > 0) {
+      minY = getIntersection(surfaces.get(0), ceilRay).y;
+    
+      // Find highest ground surface
+      for (Line tempSurf : surfaces) {
+        float y = getIntersection(tempSurf, ceilRay).y;
+        
+        if (y <= minY) {
+          surf = tempSurf;
+          minY = y;
+        }
+      }
+    }
     
     if (surf != null) {
       stroke(0);
@@ -116,12 +154,16 @@ class Player {
     }
   }
   
+  // ===== MAIN FUNCTIONS =====
+  
   void collision() {
     
     ceilCheck();
     groundCheck();
     
   }
+  
+  // ===== MOVEMENT =====
   
   void movement() {
     
@@ -180,6 +222,8 @@ class Player {
     
   }
   
+  // ===== UPDATE & DRAW =====
+  
   void update() {
     
     // Update gravity
@@ -205,8 +249,6 @@ class Player {
     rect(pos.x, pos.y, size.x, size.y);
   }
 }
-
-
 
 
 void spawnPlayer() {

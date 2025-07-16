@@ -37,7 +37,8 @@ class Solid {
   void draw() {
     
     if (useColour) fill(colour);
-    
+    stroke(0);
+    strokeWeight(1);
     beginShape();
     
     for (PVector p : points) vertex(p.x, p.y);
