@@ -87,7 +87,6 @@ class Player {
       grounded = false;
       groundSurface = null;
       groundAngle = 0;
-      println("Ungrounded");
     }
   }
   

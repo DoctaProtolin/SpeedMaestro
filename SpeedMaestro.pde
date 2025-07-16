@@ -86,4 +86,5 @@ void keyPressed() {
 void keyReleased() {
   Input.registerInputs(keyCode, false);
   editor.switchMode();
+  editor.onKeyReleased();
 }
