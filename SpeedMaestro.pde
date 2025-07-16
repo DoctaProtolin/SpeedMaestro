@@ -1,7 +1,4 @@
 
-
-
-
 Solid s;
 Player player;
 Camera camera;

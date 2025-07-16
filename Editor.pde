@@ -72,6 +72,11 @@ class Editor {
     fill(0);
     textSize(15);
     text("Mode: " + modeDisplay, textPos.x, textPos.y);
+    
+    if (!enableSwitchMode) {
+      fill(255, 0, 0);
+      text("Locked!", textPos.x, textPos.y + 20);
+    }
   }
   
   void onDrag() {
@@ -148,6 +153,7 @@ class EditorPlaceMode {
   
   void draw() {
     for (PVector p : tempPoints) {
+      fill(#00ff00);
       ellipse(p.x, p.y, 10, 10);
     }
   }
@@ -182,23 +188,28 @@ class EditorDeleteMode {
 
 class EditorSaveMode {
   Editor editor;
-  boolean saveMode = false;
-  boolean loadMode = false;
+  boolean saveMode   = false;
+  boolean loadMode   = false;
+  boolean deleteMode = false;
   
   EditorSaveMode(Editor e) {
     editor = e;
   }
   
   boolean saveData(String fileName) {
-    String[] data = new String[solids.size()]; // Initialize data string
+    String[] data = loadStrings(fileName); // For checking if file is empty
     
-    println("Saving level data...");
+    
     
     // Check if file exists
-    if (loadStrings(fileName) != null) {
+    if (data != null && !data[0].equals("EMPTY")) {
       println("Cannot save to preexisting file location: " + fileName);
       return false;
     }
+    
+    println("Saving level data...");
+    
+    data = new String[solids.size()]; // Initialize data string
     
     for (int i = 0; i < solids.size(); i ++) {
       Solid solid = solids.get(i);
@@ -206,10 +217,10 @@ class EditorSaveMode {
       
       for (int j = 0; j < solid.points.length; j ++) {
         PVector point = solid.points[j];
-        solidData += Float.toString(point.x) + "," + Float.toString(point.y);
-        
-        if (j < solid.points.length - 1) solidData += ",";
+        solidData += Float.toString(point.x) + "," + Float.toString(point.y) + ",";
       }
+      
+      solidData += solid.name;
       
       float progress = (i+1)/(float)data.length * 100;
       println("Compiling: " + Float.toString(progress) + "%");
@@ -225,7 +236,7 @@ class EditorSaveMode {
   boolean loadData(String fileName) {
     String[] data = loadStrings(fileName);
     
-    if (data == null) {
+    if (data == null || data[0].equals("EMPTY")) {
       println("No data to load for: " + fileName);
       return false;
     }
@@ -235,19 +246,22 @@ class EditorSaveMode {
     
     for (int i = 0; i < data.length; i ++) {
       String datum = data[i];
-      String coords[] = datum.split(",");
+      String values[] = datum.split(",");
       Solid tempSolid = new Solid(0, 0, 0, 0, 0, 0);
       
       boolean isX = true;
       
-      for (int j = 0; j < coords.length; j ++) {
+      for (int j = 0; j < 6; j ++) {
         int   pointIndex = floor(j/2);
-        float coordValue = parseFloat(coords[j]);
+        float coordValue = parseFloat(values[j]);
         
         if (isX) tempSolid.points[pointIndex].x = coordValue;
         else     tempSolid.points[pointIndex].y = coordValue;
-        isX = !isX;
+        
+        isX = !isX; // Switch between setting x and y coords
       }
+      
+      tempSolid.name = values[6];
       
       solids.add(tempSolid);
       
@@ -259,41 +273,82 @@ class EditorSaveMode {
     return true;
   }
   
+  boolean deleteData(String fileName) {
+    String data[] = loadStrings(fileName);
+    
+    if (data == null || data[0] == "EMPTY") {
+      println("File does not exist or has been cleared.");
+      return false;
+    }
+    
+    data = new String[1];
+    data[0] = "EMPTY";
+    
+    saveStrings(fileName, data);
+    
+    println("File cleared.");
+    
+    return true;
+  }
+  
   void onKeyReleased() {
     if (key == 's') {
       editor.enableSwitchMode = false;
-      saveMode = true;
-      loadMode = false;
+      saveMode   = true;
+      loadMode   = false;
+      deleteMode = false;
+      
       println("Enabled saving; pick a save slot from 1-3");
       return;
     }
     
     if (key == 'l') {
       editor.enableSwitchMode = false;
-      saveMode = false;
-      loadMode = true;
+      saveMode   = false;
+      loadMode   = true;
+      deleteMode = false;
+      
       println("Enabled loading; pick a save slot from 1-3");
       return;
+    }
+    
+    if (key == 'd') {
+      editor.enableSwitchMode = false;
+      saveMode   = false;
+      loadMode   = false;
+      deleteMode = true;
+      
+      println("Enabled DELETING; pick a save slot from 1-3");
     }
     
     boolean success = true;
     
     if (key >= 49 && key <= 53) {
+      
+      String slotName = "saves/slot" + Integer.toString(key - 49) + ".txt";
+      
       if (saveMode) {
-        success = saveData("saves/slot" + Integer.toString(key - 49) + ".txt");
+        success = saveData(slotName);
         saveMode = false;
         
       } else if (loadMode) {
-        success = loadData("saves/slot" + Integer.toString(key - 49) + ".txt");
+        success = loadData(slotName);
         loadMode = false;
+        
+      } else if (deleteMode) {
+        success = deleteData(slotName);
+        deleteMode = false;
+        
+      }
+      
+      if (success) {
+        editor.enableSwitchMode = true;
+      } else {
+        println("Operation failed");
       }
     }
     
-    if (success) {
-      editor.enableSwitchMode = true;
-    } else {
-      println("Operation failed");
-    }
+    
   }
 }
 
