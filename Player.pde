@@ -49,7 +49,8 @@ class Player {
         
       0:
         If the above check fails, it's possible we're going down a slope with no other objects ahead of us, causing us to continuously detatch from the surface
-        when the ground point looks ahead. The proper solution may be to shift the y coordinate too, which will be necessary to make more radical ramps.
+        when the ground point looks ahead. The proper solution may be to shift the y coordinate too, which will be necessary to make more
+        rad ramps.
     
     */
     float[] groundPointShift = {sign(vel.x) * vel.x, 0};
@@ -57,8 +58,8 @@ class Player {
     Line surf = null;
     float minY = pos.y + height * 2; // This should be offscreen and will serve as a good max value.
     
-
-    int shiftIndex = 0;    
+    int shiftIndex = 0; 
+    
     do {
       groundPoint = getGroundPoint();
       

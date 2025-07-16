@@ -191,8 +191,14 @@ class EditorSaveMode {
   
   boolean saveData(String fileName) {
     String[] data = new String[solids.size()]; // Initialize data string
-        
+    
     println("Saving level data...");
+    
+    // Check if file exists
+    if (loadStrings(fileName) != null) {
+      println("Cannot save to preexisting file location: " + fileName);
+      return false;
+    }
     
     for (int i = 0; i < solids.size(); i ++) {
       Solid solid = solids.get(i);
@@ -286,7 +292,7 @@ class EditorSaveMode {
     if (success) {
       editor.enableSwitchMode = true;
     } else {
-      println("Something went wrong. Try again?");
+      println("Operation failed");
     }
   }
 }
