@@ -26,7 +26,7 @@ void setup() {
 
 void draw() {
   
-  background(#cccccc);
+  background(#CCCCCC);
   
   camera.updateFocus(player.pos, player.facing);
   camera.update();
@@ -35,14 +35,19 @@ void draw() {
   // Draw within camera translation
   pushMatrix();
   
-  translate(width/2-camera.pos.x, 0);
+  float xOffset = camera.worldToScreenCoords(0, 0).x;
+  
+  println(xOffset);
+  
+  translate(xOffset, 0);
+  
   editor.update();
   
   player.update();
   player.draw();
   
   for (Solid s : solids) {
-    fill(#ffffff);
+    fill(#FFFFFF);
     s.draw();
   }
   

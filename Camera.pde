@@ -23,11 +23,11 @@ class Camera {
     focusPos = new PVector();
   }
   
-  PVector getWorldCoords(float x, float y) {
+  PVector screenToWorldCoords(float x, float y) {
     return new PVector(pos.x + (x - width/2), y);
   }
   
-  PVector getScreenCoords(float x, float y) {
+  PVector worldToScreenCoords(float x, float y) {
     return new PVector(x + width/2 - pos.x, y);
   }
   

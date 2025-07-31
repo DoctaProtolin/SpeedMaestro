@@ -10,6 +10,10 @@ int boolToInt(boolean a) {
   return a ? 1 : 0;
 }
 
+float deg2Rad(float d) {
+  return d * PI/180;
+}
+
 PVector getIntersection(Line a, Line b) {
   
   if (a.isVertical() || b.isVertical()) {

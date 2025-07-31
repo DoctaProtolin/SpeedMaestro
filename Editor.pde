@@ -60,6 +60,7 @@ class Editor {
 
       case EditorMode.save:
         modeDisplay = "Load & Save (mode)";
+        editorSaveMode.draw();
         break;
         
       default:
@@ -67,7 +68,7 @@ class Editor {
         break;
     }
     
-    PVector textPos = camera.getWorldCoords(100, 100);
+    PVector textPos = camera.screenToWorldCoords(100, 100);
     
     fill(0);
     textSize(15);
@@ -118,7 +119,7 @@ class EditorPlaceMode {
     }
     
     // Draw snap to point
-    PVector point = camera.getWorldCoords(mouseX, mouseY);
+    PVector point = camera.screenToWorldCoords(mouseX, mouseY);
       
     for (Solid s : solids) {
       for (PVector p : s.points) {
@@ -135,7 +136,7 @@ class EditorPlaceMode {
   }
   
   void onClick() {
-    PVector point = camera.getWorldCoords(mouseX, mouseY);
+    PVector point = camera.screenToWorldCoords(mouseX, mouseY);
       
     // Snap to point
     for (Solid s : solids) {
@@ -164,7 +165,7 @@ class EditorPlaceMode {
 class EditorDeleteMode {
   void onClick() {
     for (Solid s : solids) {
-      PVector mousePoint = camera.getWorldCoords(mouseX, mouseY);
+      PVector mousePoint = camera.screenToWorldCoords(mouseX, mouseY);
       
       if (isInside(s, mousePoint)) {
         solids.remove(s);
@@ -175,7 +176,7 @@ class EditorDeleteMode {
   
   void draw() {
     for (Solid s : solids) {
-      PVector mousePoint = camera.getWorldCoords(mouseX, mouseY);
+      PVector mousePoint = camera.screenToWorldCoords(mouseX, mouseY);
       
       if (isInside(s, mousePoint)) {
         fill(#ff0000);
@@ -191,15 +192,50 @@ class EditorSaveMode {
   boolean saveMode   = false;
   boolean loadMode   = false;
   boolean deleteMode = false;
+  boolean updateSaveDisplay = true;
+  
+  boolean[] saveDisplay = {false, false, false};
   
   EditorSaveMode(Editor e) {
     editor = e;
   }
   
+  void draw() {
+    
+    if (updateSaveDisplay) {
+      
+      for (int i = 0; i < 3; i ++) {
+        String slotName = "saves/slot" + Integer.toString(i) + ".txt";
+        String[] data = loadStrings(slotName); // For checking if file is empty
+    
+        // Check if file exists
+        saveDisplay[i] = data != null && !data[0].equals("EMPTY");
+      }
+      
+      // Reset so we don't constantly read these files
+      updateSaveDisplay = false;
+    }
+    
+    PVector windowPos = camera.screenToWorldCoords(width - 200, 200);
+    
+    
+    for (int i = 0; i < 3; i ++) {
+      String displayText = "";
+      if (saveDisplay[i]) {
+        fill(#FF0000);
+        displayText = "In use";
+      } else {
+        fill(#4F934C);
+        displayText = "Empty";
+      }
+      
+      textSize(30);
+      text(displayText, windowPos.x, windowPos.y + i * 50);
+    }
+  }
+  
   boolean saveData(String fileName) {
     String[] data = loadStrings(fileName); // For checking if file is empty
-    
-    
     
     // Check if file exists
     if (data != null && !data[0].equals("EMPTY")) {
@@ -292,33 +328,32 @@ class EditorSaveMode {
   }
   
   void onKeyReleased() {
+    
+    editor.enableSwitchMode = false;
+    updateSaveDisplay = true;
+    
     if (key == 's') {
-      editor.enableSwitchMode = false;
       saveMode   = true;
       loadMode   = false;
       deleteMode = false;
       
       println("Enabled saving; pick a save slot from 1-3");
       return;
-    }
-    
-    if (key == 'l') {
-      editor.enableSwitchMode = false;
+    } else if (key == 'l') {
       saveMode   = false;
       loadMode   = true;
       deleteMode = false;
       
       println("Enabled loading; pick a save slot from 1-3");
       return;
-    }
-    
-    if (key == 'd') {
-      editor.enableSwitchMode = false;
+    } else if (key == 'd') {
       saveMode   = false;
       loadMode   = false;
       deleteMode = true;
       
       println("Enabled DELETING; pick a save slot from 1-3");
+    } else {
+      editor.enableSwitchMode = true;
     }
     
     boolean success = true;

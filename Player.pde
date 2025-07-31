@@ -24,7 +24,7 @@ class Player {
   // ===== COLLISION POINTS =====
   
   PVector getGroundPoint() {
-    return new PVector(pos.x + size.x/2, pos.y + size.y);
+    return new PVector(pos.x + size.x/2, pos.y + size.y + 2);
   }
   
   PVector getCeilingPoint() {
@@ -53,10 +53,14 @@ class Player {
         rad ramps.
     
     */
-    float[] groundPointShift = {sign(vel.x) * vel.x, 0};
+    
+    // There's probably a faster way to do this than looping through all of the shapes thrice just for one of these points.
+    // I added the third one (-sign(vel.x) * vel.x) to prevent this odd staggering movement when sliding down to the right.
+    // When I only had two items, and the first one was changed to be the third one, the staggering was flipped, happening on slopes going down to the left.
+    float[] groundPointShift = {sign(vel.x) * vel.x, 0, -sign(vel.x) * vel.x};
     
     Line surf = null;
-    float minY = pos.y + height * 2; // This should be offscreen and will serve as a good max value.
+    
     
     int shiftIndex = 0; 
     
@@ -66,6 +70,7 @@ class Player {
       groundPoint.x += groundPointShift[shiftIndex]; // Prevent riding a slope downwards into another one while moving
       
       Line groundRay = new Line(groundPoint, new PVector(groundPoint.x, groundPoint.y - height*2));
+      float minY = pos.y + height * 2; // This should be offscreen and will serve as a good max value.
       
       // Find the highest surface in this shape and compare it to the highest surface in previous shapes.
       // The check for the ceiling is not the same.
@@ -98,7 +103,7 @@ class Player {
       grounded = true;
       groundSurface = surf;
       
-      if (surf.isVertical()) groundAngle = 90;
+      if (surf.isVertical()) groundAngle = -HALF_PI;
       else groundAngle = atan(-surf.getSlope()); // Negative for up meaning positive like in cartesian
       
       //strokeWeight(10);
@@ -111,6 +116,7 @@ class Player {
       grounded = false;
       groundSurface = null;
       groundAngle = 0;
+      
     }
   }
   
@@ -181,12 +187,30 @@ class Player {
   
   void collision() {
     
-    ceilCheck();
+    //ceilCheck();
     groundCheck();
     
   }
   
   // ===== MOVEMENT =====
+  
+  void gravity() {
+    
+    float gStrength = 1;
+    
+    if (grounded) {
+      PVector gForce = new PVector();
+      gForce.x = gStrength * cos(groundAngle + PI/2);
+      gForce.y = -gStrength * sin(groundAngle + PI/2);
+      
+      gForce.normalize();
+      gForce.mult(gStrength);
+      
+      vel.add(gForce);
+    } else {
+      vel.y += gStrength;
+    }
+  }
   
   void movement() {
     
@@ -216,6 +240,7 @@ class Player {
         vel.x = -cos(groundAngle) * speed;
         vel.y = sin(groundAngle) * speed;
       }
+      
       if (Input.right) {
         vel.x = cos(groundAngle) * speed;
         vel.y = -sin(groundAngle) * speed;
@@ -223,7 +248,6 @@ class Player {
       
       // Adhere to surface
       pos.y = groundSurface.solve(getGroundPoint().x) - size.y + 1;
-      
     } else {
       // Handle air movement
       int mov = boolToInt(Input.right) - boolToInt(Input.left); // Thanks Harmony
@@ -236,9 +260,9 @@ class Player {
     
     // Friction
     if (!Input.left && !Input.right) {
-      if (abs(vel.x) > 1) {
+      if (abs(vel.x) > 0.5 || groundAngle != 0) {
         vel.x -= sign(vel.x) * 0.2; 
-      } else {
+      } else if (grounded) {
         vel.x = 0;
       }
     }
@@ -249,9 +273,7 @@ class Player {
   
   void update() {
     
-    // Update gravity
-    if (!grounded) vel.y += 0.5;
-    
+    gravity();
     collision();
     movement();
     
