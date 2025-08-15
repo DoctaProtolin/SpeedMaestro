@@ -12,7 +12,11 @@ class Player {
   Line ceilSurface = null;
   
   // Player values
-  float speed = 5;
+  float speed = 0.5;
+  float speedCap = 5;
+  float frictionStrength = 0.5;
+  float frictionThreshold = 1;
+  
   int facing = 1;
   
   Player(float x, float y, float w, float h) {
@@ -33,12 +37,41 @@ class Player {
   
   // ===== COLLISION CHECKS =====
   
+  //void insideGroundCheck() {
+    
+  //  //Line innerRay = new Line(mid.x, mid.y, mid.x, mid.y + size.y/2 - 1);
+    
+  //  for (Solid tempSolid : solids) {
+  //    PVector mid = new PVector(pos.x + size.x/2, pos.y + size.y/2);
+  //    while(isInside(tempSolid, mid)) {
+  //      mid = new PVector(pos.x + size.x/2, pos.y + size.y/2);
+  //      pos.y -= size.y/2 + 1;
+  //      grounded = true;
+  //      println("Inside, moving up: " + pos.y);
+  //    }
+  //  }
+  //}
+  
   void groundCheck() {
     
-
-    PVector groundPoint;
     
     
+    float minY = height;
+    
+    for (Solid tempSolid : solids) {
+      PVector mid = new PVector(pos.x + size.x/2, pos.y + size.y/2);
+      Line innerCheck = new Line(mid, new PVector(mid.x, mid.y + size.y));
+      ArrayList<Line> surfaces = shapeIntersection(innerCheck, tempSolid);
+      
+      for (Line surface : surfaces) {
+        float y = surface.solve(mid.x);
+        
+        if (surface.inRange(mid.x) && y < pos.y + size.y) {
+          pos.y = y - size.y;
+          println("Adjusted");
+        }
+      }
+    }
     
     /*
       sign(vel.x) * vel.x:
@@ -59,10 +92,11 @@ class Player {
     // When I only had two items, and the first one was changed to be the third one, the staggering was flipped, happening on slopes going down to the left.
     float[] groundPointShift = {sign(vel.x) * vel.x, 0, -sign(vel.x) * vel.x};
     
-    Line surf = null;
-    
-    
     int shiftIndex = 0; 
+    
+    Line surf = null;
+    minY = pos.y + height*2; // This should be offscreen and will serve as a good max value.
+    PVector groundPoint;
     
     do {
       groundPoint = getGroundPoint();
@@ -70,7 +104,7 @@ class Player {
       groundPoint.x += groundPointShift[shiftIndex]; // Prevent riding a slope downwards into another one while moving
       
       Line groundRay = new Line(groundPoint, new PVector(groundPoint.x, groundPoint.y - height*2));
-      float minY = pos.y + height * 2; // This should be offscreen and will serve as a good max value.
+      
       
       // Find the highest surface in this shape and compare it to the highest surface in previous shapes.
       // The check for the ceiling is not the same.
@@ -188,6 +222,7 @@ class Player {
   void collision() {
     
     //ceilCheck();
+    //insideGroundCheck();
     groundCheck();
     
   }
@@ -236,13 +271,23 @@ class Player {
 
     if (grounded) {
       // Handle ground movement
+      
       if (Input.left) {
-        vel.x = -cos(groundAngle) * speed;
+        
+        if (vel.x > -speedCap) {
+          vel.x += -cos(groundAngle) * speed;
+        }
+        
         vel.y = sin(groundAngle) * speed;
       }
       
       if (Input.right) {
-        vel.x = cos(groundAngle) * speed;
+        
+        if (vel.x < speedCap) {
+          vel.x += cos(groundAngle) * speed;
+        }
+        
+        //vel.x = cos(groundAngle) * speed;
         vel.y = -sin(groundAngle) * speed;
       }
       
@@ -252,17 +297,18 @@ class Player {
       // Handle air movement
       int mov = boolToInt(Input.right) - boolToInt(Input.left); // Thanks Harmony
       
-      vel.x = mov * speed;
+      //vel.x += mov * speed;
     }
     
+    // Update facing
     if      (Input.left)  facing = -1;
     else if (Input.right) facing = 1;
     
-    // Friction
+    // Update friction
     if (!Input.left && !Input.right) {
-      if (abs(vel.x) > 0.5 || groundAngle != 0) {
-        vel.x -= sign(vel.x) * 0.2; 
-      } else if (grounded) {
+      if (abs(vel.x) > (frictionThreshold+0.5) && (groundAngle < deg2Rad(60) || groundAngle > deg2Rad(120))) {
+        vel.x -= sign(vel.x) * frictionStrength; 
+      } else if (groundAngle == 0) {
         vel.x = 0;
       }
     }

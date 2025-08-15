@@ -37,8 +37,6 @@ void draw() {
   
   float xOffset = camera.worldToScreenCoords(0, 0).x;
   
-  println(xOffset);
-  
   translate(xOffset, 0);
   
   editor.update();
