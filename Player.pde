@@ -17,6 +17,8 @@ class Player {
   float frictionStrength = 0.5;
   float frictionThreshold = 1;
   
+  float jumpStrength = 15;
+  
   int facing = 1;
   
   Player(float x, float y, float w, float h) {
@@ -256,7 +258,7 @@ class Player {
     
     // Jump conditions
     if (grounded && Input.action && !ceilingAbove) {
-      vel.y = -10;
+      vel.y = -jumpStrength;
       grounded = false;
     }
     
@@ -271,9 +273,7 @@ class Player {
 
     if (grounded) {
       // Handle ground movement
-      
       if (Input.left) {
-        
         if (vel.x > -speedCap) {
           vel.x += -cos(groundAngle) * speed;
         }
@@ -282,12 +282,10 @@ class Player {
       }
       
       if (Input.right) {
-        
         if (vel.x < speedCap) {
           vel.x += cos(groundAngle) * speed;
         }
         
-        //vel.x = cos(groundAngle) * speed;
         vel.y = -sin(groundAngle) * speed;
       }
       
@@ -305,8 +303,9 @@ class Player {
     else if (Input.right) facing = 1;
     
     // Update friction
+    boolean slopeForceAllow = groundAngle > deg2Rad(35) && groundAngle < deg2Rad(360 - 35);
     if (!Input.left && !Input.right) {
-      if (abs(vel.x) > (frictionThreshold+0.5) && (groundAngle < deg2Rad(60) || groundAngle > deg2Rad(120))) {
+      if (abs(vel.x) > (frictionThreshold+0.5) && slopeForceAllow) {
         vel.x -= sign(vel.x) * frictionStrength; 
       } else if (groundAngle == 0) {
         vel.x = 0;
@@ -330,9 +329,10 @@ class Player {
   void draw() {
     
     // Test for groundedness
-    if (grounded) {
-      fill(0, 255, 0); 
-    } else fill(255, 0, 0);
+    fill(grounded ? #00ff00 : #ff0000);
+    
+    stroke(0);
+    strokeWeight(1);
     rect(100, 100, 20, 20);
     
     fill(200, 0, 0);

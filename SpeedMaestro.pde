@@ -17,10 +17,10 @@ void setup() {
   
   spawnPlayer();
   solids.add(new Solid(0, 300, 500, 300, 250, 400)); // Ground
-  solids.add(new Solid(300, 300, 500, 200, 0, 0));
+  //solids.add(new Solid(300, 300, 500, 200, 0, 0));
   
   solids.get(0).name = "Solid 0";
-  solids.get(1).name = "Solid 1";
+  //solids.get(1).name = "Solid 1";
   // solids.get(2).name = "Solid 2";
 }
 
