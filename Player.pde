@@ -56,8 +56,6 @@ class Player {
   
   void groundCheck() {
     
-    
-    
     float minY = height;
     
     for (Solid tempSolid : solids) {
@@ -106,7 +104,6 @@ class Player {
       groundPoint.x += groundPointShift[shiftIndex]; // Prevent riding a slope downwards into another one while moving
       
       Line groundRay = new Line(groundPoint, new PVector(groundPoint.x, groundPoint.y - height*2));
-      
       
       // Find the highest surface in this shape and compare it to the highest surface in previous shapes.
       // The check for the ceiling is not the same.

@@ -86,8 +86,8 @@ class Line {
     float lesserX = min(a.x, b.x);
     float greaterX = max(a.x, b.x);
     
-    // Maybe shouldn't be <= in case you select two lines joined at their edges.
-    return lesserX < x && x < greaterX;
+    // Must be <= for vertical lines.
+    return lesserX <= x && x <= greaterX;
   }
   
   boolean inRangeY(float y) {
