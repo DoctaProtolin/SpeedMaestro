@@ -10,7 +10,7 @@ ArrayList<Solid> solids = new ArrayList();
 boolean lastKeyPressed = false;
 
 void setup() {
-  size(800, 600);
+  size(800, 600, P2D); // Set renderer to P2D on new laptop. Not sure what renderer it uses by default.
   
   camera = new Camera();
   editor = new Editor();
